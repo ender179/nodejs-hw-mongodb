@@ -1,1 +1,29 @@
-{"name":"nodejs-hw-mongodb","version":"1.0.0","description":"A Node.js application for managing contacts with MongoDB","main":"src/index.js","scripts":{"dev":"nodemon src/index.js"},"dependencies":{"cors":"^2.8.5","express":"^4.17.1","mongoose":"^6.13.8","pino":"^6.13.0"},"devDependencies":{"eslint":"^7.27.0","nodemon":"^2.0.7"},"author":"","license":"ISC","repository":{"type":"git","url":"git+https://github.com/ender179/nodejs-hw-mongodb.git"},"keywords":[],"bugs":{"url":"https://github.com/ender179/nodejs-hw-mongodb/issues"},"homepage":"https://github.com/ender179/nodejs-hw-mongodb#readme"}
+{
+    "name": "nodejs-hw-mongodb",
+    "version": "1.0.0",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+      "dev": "nodemon src/index.js",
+      "start": "node ./src/index.js",
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "Inna Khalas <innamakarec1@gmail.com>",
+    "license": "ISC",
+    "description": "",
+    "devDependencies": {
+      "@eslint/js": "^9.20.0",
+      "eslint": "^9.20.1",
+      "globals": "^15.15.0",
+      "nodemon": "^3.1.9",
+      "pino-pretty": "^13.0.0"
+    },
+    "dependencies": {
+      "cors": "^2.8.5",
+      "dotenv": "^16.4.7",
+      "express": "^4.21.2",
+      "mongoose": "^8.10.1",
+      "pino-http": "^10.4.0"
+    }
+  }
