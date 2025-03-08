@@ -1,9 +1,10 @@
-import { ContactsCollections } from '../db/models/contacts.js';
+import { create } from "../models/contact"; // Припустимо, що у вас є модель Contact  
 
-export const getAllContacts = async () => {
-  return await ContactsCollections.find();
-};
+const createContact = async (data) => {  
+  const newContact = await create(data);  
+  return newContact;  
+};  
 
-export const getContactById = async (contactId) => {
-  return await ContactsCollections.findById(contactId);
-};
+export default {  
+  createContact,  
+};  
