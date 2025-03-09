@@ -1,7 +1,7 @@
 import express, { json } from "express";  
-import contactsRouter from "./routers/contacts";  
-import errorHandler from "./middlewares/errorHandler";  
-import notFoundHandler from "./middlewares/notFoundHandler";  
+import contactsRouter from "./routers/contacts.js";  
+import errorHandler from "./middlewares/errorHandler.js";  
+import notFoundHandler from "./middlewares/notFoundHandler.js";  
 
 const app = express();  
 
