@@ -1,4 +1,4 @@
-import { create } from "../models/contact"; // Припустимо, що у вас є модель Contact  
+import { create } from "../models/contact.js";   
 
 const createContact = async (data) => {  
   const newContact = await create(data);  

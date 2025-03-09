@@ -1,4 +1,4 @@
-import { updateContact as updateContactService } from "../services/contacts";  
+import { updateContact as updateContactService } from "../services/contacts.js";  
 import createError from "http-errors";  
 
 const updateContact = async (req, res, next) => {  
