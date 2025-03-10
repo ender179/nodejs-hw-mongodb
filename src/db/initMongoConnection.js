@@ -1,19 +1,19 @@
-import mongoose from 'mongoose';
-import { getEnvVar } from '../utils/getEnvVar.js';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';  
+import { getEnvVar } from '../utils/getEnvVar.js';  
 
-export const initMongoConnection = async () => {
-  try {
-    const user = getEnvVar('MONGODB_USER');
-    const pwd = getEnvVar('MONGODB_PASSWORD');
-    const url = getEnvVar('MONGODB_URL');
-    const db = getEnvVar('MONGODB_DB');
+dotenv.config();  
 
-    mongoose.connect(
-      `mongodb+srv://${user}:${pwd}@${url}/${db}?retryWrites=true&w=majority&appName=Cluster0`,
-    );
-    console.log('Mongo connection successfully established!');
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-};
+export const initMongoConnection = async () => {  
+    try {  
+        const mongoURI = getEnvVar('MONGODB_URI');  
+        await mongoose.connect(mongoURI, {  
+            useNewUrlParser: true,  
+            useUnifiedTopology: true,  
+        });  
+        console.log("MongoDB connection successfully established!");  
+    } catch (error) {  
+        console.error("Error connecting to MongoDB:", error.message);  
+        process.exit(1);   
+    }  
+};  

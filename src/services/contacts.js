@@ -11,12 +11,20 @@ const addContact = async (contactData) => {
     }  
 };  
 
-const updateContact = async (contactId, updateData) => {  
+const getAllContacts = async () => {  
     try {  
-        const contact = await Contact.findByIdAndUpdate(contactId, updateData, { new: true });  
-        return contact;  
+        return await Contact.find(); 
     } catch (error) {  
-        console.error('Error updating contact:', error);  
+        console.error('Error getting contacts:', error);  
+        throw error;  
+    }  
+};  
+
+const getContactById = async (contactId) => {  
+    try {  
+        return await Contact.findById(contactId); 
+    } catch (error) {  
+        console.error('Error getting contact:', error);  
         throw error;  
     }  
 };  
@@ -33,6 +41,7 @@ const deleteContact = async (contactId) => {
 
 export default {  
     addContact,  
-    updateContact,  
+    getAllContacts,  
+    getContactById,  
     deleteContact,  
 };  

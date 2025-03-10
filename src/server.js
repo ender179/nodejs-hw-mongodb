@@ -6,8 +6,11 @@ import notFoundHandler from "./middlewares/notFoundHandler.js";
 const app = express();  
 
 app.use(json());  
-app.use("/contacts", contactsRouter);  
+
+app.use("/api/contacts", contactsRouter);  
+
 app.use(notFoundHandler);  
+
 app.use(errorHandler);  
 
 const setUpServer = () => {  
