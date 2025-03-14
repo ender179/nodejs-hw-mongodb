@@ -1,24 +1,32 @@
-import Contact from '../db/models/contacts.js';   
+import Contact from '../db/models/contacts.js';  
 
 const createContact = async (contactData) => {  
-    const newContact = new Contact(contactData);  
-    await newContact.save();  
-    return newContact;  
+    return await Contact.create(contactData);  
 };  
 
-const getAllContacts = async () => {  
-    const contacts = await Contact.find();  
-    return contacts;  
+const getAllContacts = async ({ skip, limit, sortBy, sortOrder }) => {  
+    const validSortFields = ['name', 'email', 'phone'];   
+    let order = 1;   
+
+    if (sortOrder === 'desc') {  
+        order = -1;   
+    }  
+
+    const sortField = validSortFields.includes(sortBy) ? sortBy : 'name';  
+
+    return await Contact.find().skip(skip).limit(limit).sort({ [sortField]: order });  
+};  
+
+const countContacts = async () => {  
+    return await Contact.countDocuments();  
 };  
 
 const getContactById = async (contactId) => {  
-    const contact = await Contact.findById(contactId);  
-    return contact;  
+    return await Contact.findById(contactId);  
 };  
 
 const deleteContact = async (contactId) => {  
-    const result = await Contact.findByIdAndDelete(contactId);   
-    return result;  
+    return await Contact.findByIdAndDelete(contactId);  
 };  
 
 const updateContact = async (contactId, updates) => {  
@@ -28,7 +36,8 @@ const updateContact = async (contactId, updates) => {
 export default {  
     createContact,  
     getAllContacts,  
+    countContacts,  
     getContactById,  
     deleteContact,  
-    updateContact,   
+    updateContact,  
 };  

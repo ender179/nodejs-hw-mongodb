@@ -1,6 +1,6 @@
 import express, { json } from "express";  
 import contactsRouter from "./routers/contacts.js";  
-import errorHandler from "./middlewares/errorHandler.js";    
+import errorHandler from "./middlewares/errorHandler.js";  
 import notFoundHandler from "./middlewares/notFoundHandler.js";  
 
 const app = express();  
@@ -11,10 +11,10 @@ app.use(notFoundHandler);
 app.use(errorHandler);  
 
 const setupServer = (port) => {  
-    app.listen(port, () => {  
-        console.log(`Сервер запущено на порті ${port}`);  
-    });  
-    return app;  
+  app.listen(port, () => {  
+    console.log(`Сервер запущено на порту ${port}`);  
+  });  
+  return app;  
 };  
 
 export default setupServer;  
