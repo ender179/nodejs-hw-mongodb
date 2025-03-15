@@ -6,6 +6,6 @@ const ctrlWrapper = (ctrl) => {
             next(error);  
         }  
     };  
-  };  
-  
-  export default ctrlWrapper;  
+};  
+
+export default ctrlWrapper;  

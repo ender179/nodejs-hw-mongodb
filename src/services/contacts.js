@@ -1,39 +1,70 @@
 import Contact from '../db/models/contacts.js';  
+import createError from 'http-errors';   
 
 const createContact = async (contactData) => {  
-    return await Contact.create(contactData);  
+    try {  
+        return await Contact.create(contactData);  
+    } catch (error) {  
+        throw createError(400, 'Ошибка при создании контакта');  
+    }  
 };  
 
-const getAllContacts = async ({ skip, limit, sortBy, sortOrder }) => {  
-    const validSortFields = ['name', 'email', 'phone'];   
-    let order = 1;   
+const getAllContacts = async ({ skip = 0, limit = 10, sortBy = 'name', sortOrder = 'asc' }) => {  
+    try {  
+        let order = sortOrder === 'desc' ? -1 : 1;  
+        const sortField = ['name', 'email', 'phone'].includes(sortBy) ? sortBy : 'name';  
 
-    if (sortOrder === 'desc') {  
-        order = -1;   
+        return await Contact.find().skip(skip).limit(limit).sort({ [sortField]: order });  
+    } catch (error) {  
+        throw createError(500, 'Ошибка при получении контактов');  
     }  
-
-    const sortField = validSortFields.includes(sortBy) ? sortBy : 'name';  
-
-    return await Contact.find().skip(skip).limit(limit).sort({ [sortField]: order });  
 };  
 
 const countContacts = async () => {  
-    return await Contact.countDocuments();  
+    try {  
+        return await Contact.countDocuments();  
+    } catch (error) {  
+        throw createError(500, 'Ошибка при подсчете контактов');  
+    }  
 };  
 
 const getContactById = async (contactId) => {  
-    return await Contact.findById(contactId);  
+    try {  
+        const contact = await Contact.findById(contactId);  
+        if (!contact) {  
+            throw createError(404, 'Контакт не найден');  
+        }  
+        return contact;  
+    } catch (error) {  
+        throw createError(500, 'Ошибка при получении контакта');  
+    }  
 };  
 
 const deleteContact = async (contactId) => {  
-    return await Contact.findByIdAndDelete(contactId);  
+    try {  
+        const contact = await Contact.findByIdAndDelete(contactId);  
+        if (!contact) {  
+            throw createError(404, 'Контакт не найден');  
+        }  
+        return contact;  
+    } catch (error) {  
+        throw createError(500, 'Ошибка при удалении контакта');  
+    }  
 };  
 
 const updateContact = async (contactId, updates) => {  
-    return await Contact.findByIdAndUpdate(contactId, updates, { new: true });  
+    try {  
+        const contact = await Contact.findByIdAndUpdate(contactId, updates, { new: true });  
+        if (!contact) {  
+            throw createError(404, 'Контакт не найден');  
+        }  
+        return contact;  
+    } catch (error) {  
+        throw createError(500, 'Ошибка при обновлении контакта');  
+    }  
 };  
 
-export default {  
+export {  
     createContact,  
     getAllContacts,  
     countContacts,  
