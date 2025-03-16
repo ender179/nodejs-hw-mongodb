@@ -1,9 +1,9 @@
 import express from 'express';  
 import {  
-    createContact,  
-    getAllContacts,  
-    updateContact,  
-    deleteContact,  
+  createContact,  
+  getAllContacts,  
+  updateContact,  
+  deleteContact,  
 } from '../controllers/contacts.js';  
 import { validateBody } from '../middlewares/validateBody.js';  
 import isValidId from '../middlewares/isValidId.js';  
