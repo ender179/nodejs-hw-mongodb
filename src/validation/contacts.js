@@ -1,13 +1,13 @@
 import Joi from 'joi';  
 
 export const createContactsSchema = Joi.object({  
-  name: Joi.string().min(1).required(),  
-  email: Joi.string().email().required(),  
-  phone: Joi.string().required(),  
+    name: Joi.string().min(1).required(),  
+    phoneNumber: Joi.string().pattern(/^[0-9]+$/).required(),   
+    email: Joi.string().email().required(),  
 });  
 
 export const updateContactsSchema = Joi.object({  
-  name: Joi.string().min(1),  
-  email: Joi.string().email(),  
-  phone: Joi.string(),  
+    name: Joi.string().min(1),  
+    phoneNumber: Joi.string().pattern(/^[0-9]+$/),   
+    email: Joi.string().email(),  
 });  
