@@ -8,9 +8,8 @@ export const errorHandler = (err, req, res, next) => {
       error: err,  
     });  
   }  
-
   res.status(500).json({  
-    status: 404,  
+    status: 500,  
     message: 'Something went wrong',  
     error: err,  
   });  

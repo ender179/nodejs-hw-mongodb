@@ -12,16 +12,12 @@ export const getAllContacts = async ({
     const limit = perPage;  
     const skip = (page - 1) * perPage;  
 
-    const contactsQuery = ContactsCollection.find();  
-    const contactsCount = await ContactsCollection.find()  
-      .merge(contactsQuery)  
-      .countDocuments();  
+    const contactsCount = await ContactsCollection.countDocuments();  
 
-    const contacts = await contactsQuery  
+    const contacts = await ContactsCollection.find()  
       .skip(skip)  
       .limit(limit)  
-      .sort({ [sortBy]: sortOrder })  
-      .exec();  
+      .sort({ [sortBy]: sortOrder });  
 
     const paginationData = calculatePaginationData(contactsCount, page, perPage);  
 
@@ -60,15 +56,15 @@ export const createContact = async (payload) => {
 
 export const updateContact = async (contactId, payload) => {  
   try {  
-    const rawResult = await ContactsCollection.findByIdAndUpdate(  
+    const updatedContact = await ContactsCollection.findByIdAndUpdate(  
       contactId,  
       payload,  
       { new: true }  
     );  
-    if (!rawResult) {  
+    if (!updatedContact) {  
       throw new Error('Contact not found');  
     }  
-    return rawResult;  
+    return updatedContact;  
   } catch (error) {  
     console.error('Error updating contact:', error);  
     throw new Error('Could not update contact');  
@@ -77,11 +73,11 @@ export const updateContact = async (contactId, payload) => {
 
 export const deleteContact = async (contactId) => {  
   try {  
-    const contact = await ContactsCollection.findOneAndDelete({ _id: contactId });  
-    if (!contact) {  
+    const deletedContact = await ContactsCollection.findByIdAndDelete(contactId);  
+    if (!deletedContact) {  
       throw new Error('Contact not found');  
     }  
-    return contact;  
+    return deletedContact;  
   } catch (error) {  
     console.error('Error deleting contact:', error);  
     throw new Error('Could not delete contact');  
