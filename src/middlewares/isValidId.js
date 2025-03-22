@@ -2,9 +2,11 @@ import createHttpError from 'http-errors';
 import { isValidObjectId } from 'mongoose';  
 
 export const isValidId = (req, res, next) => {  
-  const { contactId } = req.params;  
+  const { contactId } = req.params;   
+  
   if (!isValidObjectId(contactId)) {  
-    return next(createHttpError(400, 'Bad Request: Invalid ID'));  
+    return next(createHttpError(404, 'Bad Request: Invalid ID'));   
   }  
-  next();  
+  
+  next();   
 };  
