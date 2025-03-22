@@ -42,7 +42,7 @@ export const getContactByIdController = (req, res, next) => {
       });  
     })  
     .catch(error => {  
-      next(createHttpError(500, 'Something went wrong while fetching the contact'));  
+      next(createHttpError(404, 'Something went wrong while fetching the contact'));  
     });  
 };  
 
