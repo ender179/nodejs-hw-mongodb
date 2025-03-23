@@ -1,6 +1,6 @@
 import {  
   createContact,  
-  deleteContact,  
+  deleteContact as serviceDeleteContact,   
   getAllContacts,  
   getContactById,  
   updateContact,  
@@ -8,90 +8,65 @@ import {
 import createHttpError from 'http-errors';  
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';  
 import { parseSortParams } from '../utils/parseSortParams.js';  
+import { ctrlWrapper } from '../utils/ctrlWrapper.js';  
 
-export const getContactsController = async (req, res, next) => {  
+export const getContactsController = async (req, res) => {  
   const { page, perPage } = parsePaginationParams(req.query);  
   const { sortOrder, sortBy } = parseSortParams(req.query);  
 
-  getAllContacts({ page, perPage, sortOrder, sortBy })  
-    .then(contacts => {  
-      res.json({  
-        status: 200,  
-        message: 'Successfully found contacts!',  
-        data: contacts,  
-      });  
-    })  
-    .catch(error => {  
-      next(createHttpError(500, 'Something went wrong while fetching contacts'));  
-    });  
+  const contacts = await getAllContacts({ page, perPage, sortOrder, sortBy });  
+  
+  res.json({  
+    status: 200,  
+    message: 'Successfully found contacts!',  
+    data: contacts,  
+  });  
 };  
 
-export const getContactByIdController = (req, res, next) => {  
+export const getContactByIdController = async (req, res) => {  
   const { contactId } = req.params;  
 
-  getContactById(contactId)  
-    .then(contact => {  
-      if (contact === null) {  
-        return next(createHttpError(404, `Contact with id: ${contactId} not found`));  
-      }  
-      
-      res.status(200).json({  
-        status: 200,  
-        message: `Successfully found contact with id ${contactId}`,  
-        data: contact,  
-      });  
-    })  
-    .catch(error => {  
-      next(createHttpError(404, 'Something went wrong while fetching the contact'));  
-    });  
+  const contact = await getContactById(contactId);  
+  
+  res.status(200).json({  
+    status: 200,  
+    message: `Successfully found contact with id ${contactId}`,  
+    data: contact,  
+  });  
 };  
 
-export const createContactsController = (req, res, next) => {  
-  createContact(req.body)  
-    .then(contact => {  
-      res.status(201).json({  
-        status: 201,  
-        message: 'Successfully created a contact!',  
-        data: contact,  
-      });  
-    })  
-    .catch(error => {  
-      next(createHttpError(500, 'Something went wrong while creating the contact'));  
-    });  
+export const createContactsController = async (req, res) => {  
+  const contact = await createContact(req.body);  
+  
+  res.status(201).json({  
+    status: 201,  
+    message: 'Successfully created a contact!',  
+    data: contact,  
+  });  
 };  
 
-export const patchContactController = (req, res, next) => {  
+export const patchContactController = async (req, res) => {  
   const { contactId } = req.params;  
 
-  updateContact(contactId, req.body)  
-    .then(result => {  
-      if (result === null) {  
-        return next(createHttpError(404, 'Contact not found'));  
-      }  
-
-      res.json({  
-        status: 200,  
-        message: 'Successfully patched a contact!',  
-        data: result,  
-      });  
-    })  
-    .catch(error => {  
-      next(createHttpError(500, 'Something went wrong while updating the contact'));  
-    });  
+  const updatedContact = await updateContact(contactId, req.body);  
+  
+  res.json({  
+    status: 200,  
+    message: 'Successfully patched a contact!',  
+    data: updatedContact,  
+  });  
 };  
 
-export const deleteContactController = (req, res, next) => {  
+export const deleteContactController = async (req, res) => {  
   const { contactId } = req.params;  
 
-  deleteContact(contactId)  
-    .then(contact => {  
-      if (contact === null) {  
-        return next(createHttpError(404, 'Contact not found'));  
-      }  
-
-      res.status(204).json();  
-    })  
-    .catch(error => {  
-      next(createHttpError(500, 'Something went wrong while deleting the contact'));  
-    });  
+  await serviceDeleteContact(contactId);  
+  
+  res.status(204).json();  
 };  
+
+export const getContacts = ctrlWrapper(getContactsController);  
+export const getContact = ctrlWrapper(getContactByIdController);  
+export const createContacts = ctrlWrapper(createContactsController);  
+export const patchContact = ctrlWrapper(patchContactController);  
+export const removeContact = ctrlWrapper(deleteContactController);   
