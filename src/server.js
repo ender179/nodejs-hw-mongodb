@@ -36,6 +36,18 @@ export async function setupServer() {
 
     app.use('/api', contactsRouter);
 
+    app.use(express.json());
+
+    app.use((err, req, res, next) => {
+      if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+        res.status(400).json({ status: 400, message: 'Invalid JSON syntax' });
+      } else {
+        next(err);
+      }
+    });
+
+    app.use('/api', contactsRouter);
+
     app.use(notFoundHandler);
 
     app.use(errorHandler);
