@@ -13,8 +13,8 @@ const PORT = Number(getEnvVar('PORT', '3000'));
 export async function setupServer() {
   try {
     const app = express();
-    app.use(express.json());
-    app.use(cors());
+
+    // Логирование HTTP-запросов
     app.use(
       pino({
         transport: {
@@ -23,16 +23,35 @@ export async function setupServer() {
       }),
     );
 
-    app.use(contactsRouter);
+    // Обработка CORS
+    app.use(cors());
 
+    // Обработка JSON-тел запросов
+    app.use(express.json());
+
+    // Обработчик ошибок парсинга JSON
+    app.use((err, req, res, next) => {
+      if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+        res.status(400).json({ status: 400, message: 'Invalid JSON syntax' });
+      } else {
+        next(err);
+      }
+    });
+
+    // Подключение маршрутов
+    app.use('/api', contactsRouter);
+
+    // Обработчик для несуществующих маршрутов
     app.use(notFoundHandler);
 
+    // Центральный обработчик ошибок
     app.use(errorHandler);
 
+    // Запуск сервера
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error during server setup:', error);
   }
 }
