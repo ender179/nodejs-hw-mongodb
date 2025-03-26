@@ -16,19 +16,14 @@ import { isValidId } from '../middlewares/isValidId.js';
 
 const router = Router();  
 
-// Отримання всіх контактів  
 router.get('/contacts', ctrlWrapper(getContactsController));  
 
-// Отримання контакту за ID  
 router.get('/contacts/:contactId', isValidId, ctrlWrapper(getContactByIdController));  
 
-// Створення нового контакту  
 router.post('/contacts', validateBody(createContactsSchema), ctrlWrapper(createContactsController));  
 
-// Оновлення контакту за ID  
 router.patch('/contacts/:contactId', isValidId, validateBody(updateContactsSchema), ctrlWrapper(patchContactController));  
 
-// Видалення контакту за ID  
 router.delete('/contacts/:contactId', isValidId, ctrlWrapper(deleteContactController));  
 
 export default router;  
