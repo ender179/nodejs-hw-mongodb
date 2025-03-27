@@ -1,6 +1,6 @@
 import {  
   createContact,  
-  deleteContact as serviceDeleteContact,   
+  deleteContact as serviceDeleteContact,  
   getAllContacts,  
   getContactById,  
   updateContact,  
@@ -15,7 +15,7 @@ export const getContactsController = async (req, res) => {
   const { sortOrder, sortBy } = parseSortParams(req.query);  
 
   const contacts = await getAllContacts({ page, perPage, sortOrder, sortBy });  
-  
+
   res.json({  
     status: 200,  
     message: 'Successfully found contacts!',  
@@ -25,7 +25,7 @@ export const getContactsController = async (req, res) => {
 
 export const getContactByIdController = async (req, res) => {  
   const { contactId } = req.params;  
-   
+
   const contact = await getContactById(contactId);  
   if (!contact) {  
     throw createHttpError(404, `Contact with id ${contactId} not found`);  
@@ -40,7 +40,7 @@ export const getContactByIdController = async (req, res) => {
 
 export const createContactsController = async (req, res) => {  
   const contact = await createContact(req.body);  
-   
+
   res.status(201).json({  
     status: 201,  
     message: 'Successfully created a contact!',  
@@ -70,7 +70,7 @@ export const deleteContactController = async (req, res) => {
   if (!result) {  
     throw createHttpError(404, `Contact with id ${contactId} not found`);  
   }  
-  
+
   res.status(204).json();  
 };  
 
@@ -78,4 +78,4 @@ export const getContacts = ctrlWrapper(getContactsController);
 export const getContact = ctrlWrapper(getContactByIdController);  
 export const createContacts = ctrlWrapper(createContactsController);  
 export const patchContact = ctrlWrapper(patchContactController);  
-export const removeContact = ctrlWrapper(deleteContactController);  
+export const removeContact = ctrlWrapper(deleteContactController); 
