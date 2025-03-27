@@ -1,3 +1,4 @@
+import createHttpError from 'http-errors';  
 import { SORT_ORDER } from '../constants/index.js';  
 import { ContactsCollection } from '../models/contact.js';  
 import { calculatePaginationData } from '../utils/calculatePaginationData.js';  
@@ -28,7 +29,7 @@ export const getAllContacts = async ({
 export const getContactById = async (contactId) => {  
   const contact = await ContactsCollection.findById(contactId);  
   if (!contact) {  
-    throw new Error('Contact not found');  
+    throw createHttpError(404, 'Contact not found');  
   }  
   return contact;  
 };  
@@ -45,7 +46,7 @@ export const updateContact = async (contactId, payload) => {
     { new: true }  
   );  
   if (!updatedContact) {  
-    throw new Error('Contact not found');  
+    throw createHttpError(404, 'Contact not found');  
   }  
   return updatedContact;  
 };  
@@ -53,7 +54,7 @@ export const updateContact = async (contactId, payload) => {
 export const deleteContact = async (contactId) => {  
   const deletedContact = await ContactsCollection.findByIdAndDelete(contactId);  
   if (!deletedContact) {  
-    throw new Error('Contact not found');  
+    throw createHttpError(404, 'Contact not found');  
   }  
   return deletedContact;  
-};  
+};
