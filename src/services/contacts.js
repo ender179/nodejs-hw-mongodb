@@ -1,60 +1,70 @@
-import createHttpError from 'http-errors';  
-import { SORT_ORDER } from '../constants/index.js';  
-import { ContactsCollection } from '../models/contact.js';  
-import { calculatePaginationData } from '../utils/calculatePaginationData.js';  
+import SORT_ORDER from '../constants/index.js';
+import { ContactsCollections } from '../db/models/contacts.js';
+import { calculateData } from '../utils/calculatePages.js';
 
-export const getAllContacts = async ({  
-  page = 1,  
-  perPage = 10,  
-  sortOrder = SORT_ORDER.ASC,  
-  sortBy = '_id',  
-}) => {  
-  const limit = perPage;  
-  const skip = (page - 1) * perPage;  
+export const getAllContacts = async ({
+  page = 1,
+  perPage = 10,
+  sortOrder = SORT_ORDER.ASC,
+  sortBy = 'name',
+  filter = {},
+  userId,
+}) => {
+  const limit = perPage;
+  const skip = (page - 1) * perPage;
 
-  const contactsCount = await ContactsCollection.countDocuments();  
-  const contacts = await ContactsCollection.find()  
-    .skip(skip)  
-    .limit(limit)  
-    .sort({ [sortBy]: sortOrder });  
+  console.log('user', userId);
 
-  const paginationData = calculatePaginationData(contactsCount, page, perPage);  
+  const contactsQuery = ContactsCollections.find({ userId });
 
-  return {  
-    data: contacts,  
-    ...paginationData,  
-  };  
-};  
+  if (filter.type) {
+    contactsQuery.where('contactType').equals(filter.type);
+  }
 
-export const getContactById = async (contactId) => {  
-  const contact = await ContactsCollection.findById(contactId);  
-  if (!contact) {  
-    throw createHttpError(404, 'Contact not found');  
-  }  
-  return contact;  
-};  
+  if (filter.isFavourite === true) {
+    contactsQuery.where('isFavourite').equals(true);
+  } else if (filter.isFavourite === false) {
+    contactsQuery.where('isFavourite').equals(false);
+  }
 
-export const createContact = async (payload) => {  
-  const contact = await ContactsCollection.create(payload);  
-  return contact;  
-};  
+  const [contactsCount, contacts] = await Promise.all([
+    ContactsCollections.find().merge(contactsQuery).countDocuments(),
+    contactsQuery
+      .limit(limit)
+      .skip(skip)
+      .sort({ [sortBy]: sortOrder })
+      .exec(),
+  ]);
+  const paginationData = calculateData(contactsCount, page, perPage);
+  return {
+    data: contacts,
+    ...paginationData,
+  };
+};
 
-export const updateContact = async (contactId, payload) => {  
-  const updatedContact = await ContactsCollection.findByIdAndUpdate(  
-    contactId,  
-    payload,  
-    { new: true }  
-  );  
-  if (!updatedContact) {  
-    throw createHttpError(404, 'Contact not found');  
-  }  
-  return updatedContact;  
-};  
+export const getContactById = async ({ _id, userId }) => {
+  return await ContactsCollections.findOne({ _id, userId });
+};
 
-export const deleteContact = async (contactId) => {  
-  const deletedContact = await ContactsCollection.findByIdAndDelete(contactId);  
-  if (!deletedContact) {  
-    throw createHttpError(404, 'Contact not found');  
-  }  
-  return deletedContact;  
+export const createContact = async (payload) => {
+  return await ContactsCollections.create(payload);
+};
+
+export const deleteContact = async ({ contactId, userId }) => {
+  const contact = await ContactsCollections.findOneAndDelete({
+    _id: contactId,
+    userId: userId,
+  });
+  return contact;
+};
+
+export const updateContact = async (conditions, payload) => {
+  const rawResult = await ContactsCollections.findOneAndUpdate(
+    conditions,
+    { $set: payload },
+    { new: true },
+  );
+  if (!rawResult) return null;
+
+  return rawResult;
 };
