@@ -1,30 +1,57 @@
-import { Router } from 'express';
-import { ctrlWrapper } from '../utils/ctrlWrapper.js';
-import {
-  loginUserController,
-  logoutUserController,
-  refreshSessionController,
-  registerUserController,
-} from '../controllers/auth.js';
-import { validateBody } from '../middlewares/validateBody.js';
-import { createUserSchema, loginSchema } from '../validation/user.js';
+import { Router } from 'express';  
+import { verify } from 'jsonwebtoken';  
+import createHttpError from 'http-errors';  
+import validateBody from '../middlewares/validateBody.js';  
+import UsersCollection from '../models/user.js';  
 
-const router = Router();
+const router = Router();  
 
-router.post(
-  '/register',
-  validateBody(createUserSchema),
-  ctrlWrapper(registerUserController),
-);
+router.post('/send-email', validateBody({ email: req.body }), async (req, res, next) => {  
+    const { email } = req.body;  
 
-router.post(
-  '/login',
-  validateBody(loginSchema),
-  ctrlWrapper(loginUserController),
-);
+    try {  
+        const user = await UsersCollection.findOne({ email });  
+        if (!user) {  
+            throw createHttpError(404, 'Пользователь не найден!');  
+        }  
 
-router.post('/refresh', ctrlWrapper(refreshSessionController));
+        const token = verify(email);   
+        res.status(200).json({  
+            status: 200,  
+            message: 'Письмо успешно отправлено.',  
+        });  
+    } catch (error) {  
+        if (error instanceof createHttpError.HttpError) {  
+            return next(error);  
+        }  
+        return next(createHttpError(500, 'Ошибка при обработке письма. Попробуйте снова позже.'));  
+    }  
+});  
 
-router.post('/logout', ctrlWrapper(logoutUserController));
+router.post('/reset-pwd', validateBody({ token: req.body, password: req.body }), async (req, res, next) => {  
+    const { token, password } = req.body;  
 
-export default router;
+    try {  
+        const decoded = verify(token, process.env.JWT_SECRET);  
+        const user = await UsersCollection.findOne({ email: decoded.email });  
+
+        if (!user) {  
+            throw createHttpError(404, 'Пользователь не найден!');  
+        }  
+
+        user.password = password;   
+        await user.save();  
+
+        res.status(200).json({  
+            status: 200,  
+            message: 'Пароль успешно сброшен!',  
+        });  
+    } catch (error) {  
+        if (error instanceof createHttpError.HttpError) {  
+            return next(error);  
+        }  
+        return next(createHttpError(401, 'Токен недействителен.'));  
+    }  
+});  
+
+export default router;  

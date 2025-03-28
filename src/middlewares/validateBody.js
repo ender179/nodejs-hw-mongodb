@@ -1,15 +1,16 @@
-import createHttpError from 'http-errors';
+import createHttpError from 'http-errors';  
 
-export const validateBody = (shema) => async (req, res, next) => {
-  try {
-    await shema.validateAsync(req.body, {
-      abortEarly: false,
-    });
-    next();
-  } catch (err) {
-    const error = createHttpError(400, 'Bad request', {
-      errors: err.details,
-    });
-    next(error);
-  }
-};
+const validateBody = (requiredFields) => {  
+    return (req, res, next) => {  
+        const body = req.body;  
+
+        for (const field of requiredFields) {  
+            if (!body[field]) {  
+                return next(createHttpError(400, `Поле "${field}" обязательно для заполнения`));  
+            }  
+        }  
+        next();  
+    };  
+};  
+
+export default validateBody; // Экспортируем как default  

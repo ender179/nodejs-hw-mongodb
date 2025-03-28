@@ -1,41 +1,28 @@
-import express from 'express';
-import cors from 'cors';
-import { pinoHttp } from 'pino-http';
-import { getEnvVar } from './utils/getEnvVar.js';
-import { errorHandler } from './middlewares/errorHandler.js';
-import { notFoundHandler } from './middlewares/notFoundHandler.js';
-import cookieParser from 'cookie-parser';
-import routers from './routers/index.js';
-const PORT = Number(getEnvVar('PORT', '3000'));
+import express from 'express';  
+import mongoose from 'mongoose';  
+import cors from 'cors';  
+import { config } from 'dotenv';  
+import routes from './routers/index.js';  
+import notFoundHandler from './middlewares/notFoundHandler.js';  
+import errorHandler from './middlewares/errorHandler.js';  
 
-const setUpServer = () => {
-  const app = express();
+config(); 
 
-  app.use(express.json());
-  app.use(cors());
-  app.use(cookieParser());
-  app.use(
-    pinoHttp({
-      transport: {
-        target: 'pino-pretty',
-      },
-    }),
-  );
+const app = express();  
 
-  app.get('/', (req, res) => {
-    res.json({
-      message: 'Hello Mentor',
-    });
-  });
+app.use(cors());  
+app.use(express.json());  
+app.use(routes); 
 
-  app.use(routers);
+app.use(notFoundHandler);   
+app.use(errorHandler);  
 
-  app.use('*', notFoundHandler);
-  app.use(errorHandler);
+const PORT = process.env.PORT || 3000;  
 
-  app.listen(PORT, () => {
-    console.log(` Server is running on port ${PORT}`);
-  });
-};
-
-export default setUpServer;
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })  
+    .then(() => {  
+        app.listen(PORT, () => {  
+            console.log(`Сервер запущен на порту ${PORT}`);  
+        });  
+    })  
+    .catch(err => console.error(err));  
