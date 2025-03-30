@@ -1,12 +1,14 @@
 import { Router } from 'express';  
-import { verify } from 'jsonwebtoken';  
+import pkg from 'jsonwebtoken';    
 import createHttpError from 'http-errors';  
 import validateBody from '../middlewares/validateBody.js';  
-import UsersCollection from '../models/user.js';  
+import UsersCollection from '../db/models/user.js';  
+
+const { verify, sign } = pkg;  
 
 const router = Router();  
 
-router.post('/send-email', validateBody({ email: req.body }), async (req, res, next) => {  
+router.post('/send-email', validateBody({ email: 'string|required' }), async (req, res, next) => {  
     const { email } = req.body;  
 
     try {  
@@ -15,10 +17,12 @@ router.post('/send-email', validateBody({ email: req.body }), async (req, res, n
             throw createHttpError(404, 'Пользователь не найден!');  
         }  
 
-        const token = verify(email);   
+        const token = sign({ email }, process.env.JWT_SECRET, { expiresIn: '1h' });   
+
         res.status(200).json({  
             status: 200,  
             message: 'Письмо успешно отправлено.',  
+            token,  
         });  
     } catch (error) {  
         if (error instanceof createHttpError.HttpError) {  
@@ -28,7 +32,8 @@ router.post('/send-email', validateBody({ email: req.body }), async (req, res, n
     }  
 });  
 
-router.post('/reset-pwd', validateBody({ token: req.body, password: req.body }), async (req, res, next) => {  
+// Эндпоинт для сброса пароля  
+router.post('/reset-pwd', validateBody({ token: 'string|required', password: 'string|required' }), async (req, res, next) => {  
     const { token, password } = req.body;  
 
     try {  

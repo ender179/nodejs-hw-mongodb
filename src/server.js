@@ -3,26 +3,24 @@ import mongoose from 'mongoose';
 import cors from 'cors';  
 import { config } from 'dotenv';  
 import routes from './routers/index.js';  
-import notFoundHandler from './middlewares/notFoundHandler.js';  
-import errorHandler from './middlewares/errorHandler.js';  
+import notFoundHandler from './middleWares/notFoundHandler.js';  
+import errorHandler from './middleWares/errorHandler.js';  
 
-config(); 
+config();  
 
-const app = express();  
+const setupServer = () => {  
+    const app = express();  
+    app.use(cors());  
+    app.use(express.json());  
+    app.use(routes);  
+    app.use(notFoundHandler);  
+    app.use(errorHandler);  
 
-app.use(cors());  
-app.use(express.json());  
-app.use(routes); 
+    const PORT = process.env.PORT || 3000;  
 
-app.use(notFoundHandler);   
-app.use(errorHandler);  
+    app.listen(PORT, () => {  
+        console.log(`Сервер запущен на порту ${PORT}`);  
+    });  
+};  
 
-const PORT = process.env.PORT || 3000;  
-
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })  
-    .then(() => {  
-        app.listen(PORT, () => {  
-            console.log(`Сервер запущен на порту ${PORT}`);  
-        });  
-    })  
-    .catch(err => console.error(err));  
+export default setupServer; // Экспорт по умолчанию  
