@@ -1,10 +1,10 @@
 import express from 'express';  
 import mongoose from 'mongoose';  
-import cors from 'cors';  
 import { config } from 'dotenv';  
-import routes from './routers/index.js';  
-import notFoundHandler from './middleWares/notFoundHandler.js';  
+import cors from 'cors';  
+import indexRouter from './routers/index.js';  
 import errorHandler from './middleWares/errorHandler.js';  
+import notFoundHandler from './middleWares/notFoundHandler.js';  
 
 config();  
 
@@ -12,7 +12,7 @@ const setupServer = () => {
     const app = express();  
     app.use(cors());  
     app.use(express.json());  
-    app.use(routes);  
+    app.use(indexRouter);  
     app.use(notFoundHandler);  
     app.use(errorHandler);  
 
@@ -23,4 +23,4 @@ const setupServer = () => {
     });  
 };  
 
-export default setupServer; // Экспорт по умолчанию  
+export default setupServer;  
