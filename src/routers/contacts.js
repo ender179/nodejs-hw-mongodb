@@ -1,57 +1,44 @@
-import express from 'express';  
-import multer from 'multer';  
-import cloudinary from '../config/cloudinary.js';   
-import createHttpError from 'http-errors';  
-import Contact from '../db/models/contacts.js';   
-const router = express.Router();  
+import { Router } from 'express';
+import {
+  createContactsController,
+  deleteContactController,
+  getContactByIdController,
+  getContactsController,
+  patchContactController,
+} from '../controllers/contacts.js';
+import { ctrlWrapper } from '../utils/ctrlWrapper.js';
+import { validateBody } from '../middlewares/validateBody.js';
+import {
+  createContactsSchema,
+  updateContactsSchema,
+} from '../validation/contacts.js';
+import { isValidId } from '../middlewares/isValidId.js';
+import { authenticate } from '../middlewares/authenticate.js';
+import { upload } from '../middlewares/multer.js';
 
-const storage = multer.memoryStorage();  
-const upload = multer({ storage });  
+const router = Router();
 
-router.post('/', upload.single('photo'), async (req, res, next) => {  
-    const { name, email, phoneNumber, contactType } = req.body;  
+router.use(authenticate);
 
-    try {  
-        let photoUrl = '';  
-        if (req.file) {  
-            const result = await cloudinary.uploader.upload_stream(req.file.buffer);   
-            photoUrl = result.secure_url;  
-        }  
+router.get('/', ctrlWrapper(getContactsController));
 
-        const newContact = new Contact({  
-            name,  
-            email,  
-            phoneNumber,  
-            contactType,  
-            photo: photoUrl,  
-            userId: req.user._id,   
-        });  
+router.get('/:contactId', isValidId, ctrlWrapper(getContactByIdController));
 
-        await newContact.save();  
-        res.status(201).json(newContact);  
-    } catch (error) {  
-        next(createHttpError(500, "Ошибка при сохранении контакта."));  
-    }  
-});  
+router.post(
+  '/',
+  upload.single('photo'),
+  validateBody(createContactsSchema),
+  ctrlWrapper(createContactsController),
+);
 
-router.patch('/:contactId', upload.single('photo'), async (req, res, next) => {  
-    const { contactId } = req.params;  
+router.patch(
+  '/:contactId',
+  isValidId,
+  upload.single('photo'),
+  validateBody(updateContactsSchema),
+  ctrlWrapper(patchContactController),
+);
 
-    try {  
-        const contact = await Contact.findById(contactId);  
-        if (!contact) throw createHttpError(404, 'Контакт не найден!');  
+router.delete('/:contactId', isValidId, ctrlWrapper(deleteContactController));
 
-        if (req.file) {  
-            const result = await cloudinary.uploader.upload_stream(req.file.buffer); 
-            contact.photo = result.secure_url;  
-        }  
-
-        Object.assign(contact, req.body);  
-        await contact.save();  
-        res.status(200).json(contact);  
-    } catch (error) {  
-        next(createHttpError(500, "Ошибка при обновлении контакта."));  
-    }  
-});  
-
-export default router;  
+export default router;

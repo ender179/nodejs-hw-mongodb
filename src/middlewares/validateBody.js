@@ -1,16 +1,15 @@
-import createHttpError from 'http-errors';  
+import createHttpError from 'http-errors';
 
-const validateBody = (requiredFields) => {  
-    return (req, res, next) => {  
-        const body = req.body;  
-
-        for (const field of requiredFields) {  
-            if (!body[field]) {  
-                return next(createHttpError(400, `Поле "${field}" обязательно для заполнения`));  
-            }  
-        }  
-        next();  
-    };  
-};  
-
-export default validateBody; // Экспортируем как default  
+export const validateBody = (schema) => async (req, res, next) => {
+  try {
+    await schema.validateAsync(req.body, {
+      abortEarly: false,
+    });
+    next();
+  } catch (err) {
+    const error = createHttpError(400, 'Bad Request', {
+      error: err.details,
+    });
+    next(error);
+  }
+};

@@ -1,10 +1,12 @@
-const parseNumber = (num, defaultValue) => {
-  if (typeof num !== 'string') return defaultValue;
+const parseNumber = (number, defaultValue) => {
+  const isString = typeof number === 'string';
+  if (!isString) return defaultValue;
 
-  const parsedNumber = parseInt(num);
-  if (isNaN(parsedNumber)) {
+  const parsedNumber = parseInt(number);
+  if (Number.isNaN(parsedNumber)) {
     return defaultValue;
   }
+
   return parsedNumber;
 };
 
