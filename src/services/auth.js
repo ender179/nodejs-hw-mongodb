@@ -11,7 +11,7 @@ import {
 import { SessionsCollections } from '../models/session.js';
 import jwt from 'jsonwebtoken';
 import { getEnvVar } from '../utils/getEnvVar.js';
-import { sendEmail } from '../utils/sendMail.js';
+import { sendMail } from '../utils/sendMail.js'; 
 import handlebars from 'handlebars';
 import path from 'node:path';
 import fs from 'node:fs/promises';
@@ -24,7 +24,7 @@ export const registerUser = async (payload) => {
 
   const encryptedPassword = await bcrypt.hash(payload.password, 10);
 
-  return await UsersCollection.create({
+  return UsersCollection.create({
     ...payload,
     password: encryptedPassword,
   });
@@ -47,7 +47,7 @@ export const loginUser = async (payload) => {
   const accessToken = randomBytes(30).toString('base64');
   const refreshToken = randomBytes(30).toString('base64');
 
-  return await SessionsCollections.create({
+  return SessionsCollections.create({
     userId: user._id,
     accessToken,
     refreshToken,
@@ -58,47 +58,6 @@ export const loginUser = async (payload) => {
 
 export const logoutUser = async (sessionId) => {
   await SessionsCollections.deleteOne({ _id: sessionId });
-};
-
-const createSession = () => {
-  const accessToken = randomBytes(30).toString('base64');
-  const refreshToken = randomBytes(30).toString('base64');
-
-  return {
-    accessToken,
-    refreshToken,
-    accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
-    refreshTokenValidUntil: new Date(Date.now() + ONE_DAY),
-  };
-};
-
-export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
-  const session = await SessionsCollections.findOne({
-    _id: sessionId,
-    refreshToken,
-  });
-
-  if (!session) {
-    throw createHttpError(401, 'Session not found');
-  }
-
-  const isSessionTokenExpired =
-    new Date() > new Date(session.refreshTokenValidUntil);
-
-  if (isSessionTokenExpired) {
-    throw createHttpError(401, 'Session token expired');
-  }
-
-  await SessionsCollections.deleteOne({ _id: sessionId, refreshToken });
-
-  const newSession = createSession();
-
-  await SessionsCollections.deleteOne({ _id: sessionId, refreshToken });
-
-  return await SessionsCollections.create({
-    userId: session.userId,
-    ...newSession,
-  });
 };
 
 export const requestResetToken = async (email) => {
@@ -124,9 +83,7 @@ export const requestResetToken = async (email) => {
     'reset-password-email.html',
   );
   try {
-    const templateSource = (
-      await fs.readFile(resetPasswordTemplatePath)
-    ).toString();
+    const templateSource = (await fs.readFile(resetPasswordTemplatePath)).toString();
 
     const template = handlebars.compile(templateSource);
     const html = template({
@@ -134,7 +91,7 @@ export const requestResetToken = async (email) => {
       link: `${getEnvVar('APP_DOMAIN')}/reset-password?token=${resetToken}`,
     });
 
-    await sendEmail({
+    await sendMail({
       from: getEnvVar(SMTP.SMTP_FROM),
       to: email,
       subject: 'Reset your password',
@@ -176,4 +133,24 @@ export const resetPassword = async (payload) => {
   );
 
   await SessionsCollections.deleteOne({ userId: user._id });
+};
+
+export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
+  const session = await SessionsCollections.findOne({ _id: sessionId, refreshToken });
+
+  if (!session) {
+    throw createHttpError(401, 'Invalid session or refresh token.');
+  }
+
+  if (new Date() > session.refreshTokenValidUntil) {
+    throw createHttpError(401, 'Refresh token expired.');
+  }
+
+  const accessToken = randomBytes(30).toString('base64');
+  session.accessToken = accessToken;
+  session.accessTokenValidUntil = new Date(Date.now() + FIFTEEN_MINUTES);
+
+  await session.save();
+
+  return session;
 };
