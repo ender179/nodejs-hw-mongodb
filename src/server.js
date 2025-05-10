@@ -1,28 +1,41 @@
-import express, { json } from 'express';  
-import cors from 'cors';  
-const pino = require('pino')();  
-import contactsRouter from './routes/contacts';  
+import express from 'express';
+import cors from 'cors';
+import { pinoHttp } from 'pino-http';
+import { getEnvVar } from './utils/getEnvVar.js';
+import { errorHandler } from './middlewares/errorHandler.js';
+import { notFoundHandler } from './middlewares/notFoundHandler.js';
+import cookieParser from 'cookie-parser';
+import routers from './routers/index.js';
+const PORT = Number(getEnvVar('PORT', '3000'));
 
-const setupServer = () => {  
-  const app = express();  
-  app.use(cors());  
-  app.use(json());  
-  
-  app.use((req, res, next) => {  
-    pino.info(`${req.method} ${req.url}`);  
-    next();  
-  });  
+const setUpServer = () => {
+  const app = express();
 
-  app.use('/contacts', contactsRouter);  
+  app.use(express.json());
+  app.use(cors());
+  app.use(cookieParser());
+  app.use(
+    pinoHttp({
+      transport: {
+        target: 'pino-pretty',
+      },
+    }),
+  );
 
-  app.use((req, res) => {  
-    res.status(404).json({ message: 'Not found' });  
-  });  
+  app.get('/', (req, res) => {
+    res.json({
+      message: 'Hello Mentor',
+    });
+  });
 
-  const PORT = process.env.PORT || 3000;  
-  app.listen(PORT, () => {  
-    console.log(`Server is running on port ${PORT}`);  
-  });  
-};  
+  app.use(routers);
 
-export default setupServer;
+  app.use('*', notFoundHandler);
+  app.use(errorHandler);
+
+  app.listen(PORT, () => {
+    console.log(` Server is running on port ${PORT}`);
+  });
+};
+
+export default setUpServer;
