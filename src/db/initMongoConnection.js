@@ -1,17 +1,16 @@
-import { connect } from 'mongoose';  
+import dotenv from 'dotenv';  
+import mongoose from 'mongoose';  
+import { getEnvVar } from '../utils/getEnvVar.js';  
 
-const initMongoConnection = async () => {  
-  try {  
-    await connect(process.env.MONGODB_URL, {  
-      user: process.env.MONGODB_USER,  
-      pass: process.env.MONGODB_PASSWORD,  
-      dbName: process.env.MONGODB_DB,  
-    });  
-    console.log('Mongo connection successfully established!');  
-  } catch (error) {  
-    console.error('Mongo connection failed!', error);  
-    process.exit(1);  
-  }  
+dotenv.config();  
+
+export const initMongoConnection = async () => {  
+    try {  
+        const mongoURI = getEnvVar('MONGODB_URI');  
+        await mongoose.connect(mongoURI); 
+        console.log("MongoDB connection successfully established!");  
+    } catch (error) {  
+        console.error("Error connecting to MongoDB:", error.message);  
+        process.exit(1);  
+    }  
 };  
-
-export default initMongoConnection;

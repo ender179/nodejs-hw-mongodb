@@ -1,9 +1,14 @@
-import setupServer from './server';  
-import initMongoConnection from './db/initMongoConnection';  
+import { initMongoConnection } from './db/initMongoConnection.js';  
+import setUpServer from './server.js';  
 
-const startApp = async () => {  
-  await initMongoConnection();  
-  setupServer();  
+export const bootstrap = async () => {  
+    await initMongoConnection();  
+    const app = setUpServer();  
+
+    const PORT = process.env.PORT || 3000;    
+    app.listen(PORT, () => {  
+        console.log(`Сервер запущен на порту ${PORT}`);   
+    });  
 };  
 
-startApp();
+bootstrap();  

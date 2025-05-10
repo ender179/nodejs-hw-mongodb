@@ -1,28 +1,20 @@
-import express, { json } from 'express';  
-import cors from 'cors';  
-const pino = require('pino')();  
-import contactsRouter from './routes/contacts';  
+import express, { json } from "express";  
+import contactsRouter from "./routers/contacts.js";  
+import errorHandler from "./middlewares/errorHandler.js";    
+import notFoundHandler from "./middlewares/notFoundHandler.js";  
 
-const setupServer = () => {  
-  const app = express();  
-  app.use(cors());  
-  app.use(json());  
-  
-  app.use((req, res, next) => {  
-    pino.info(`${req.method} ${req.url}`);  
-    next();  
-  });  
+const app = express();  
 
-  app.use('/contacts', contactsRouter);  
+app.use(json());  
+app.use("/contacts", contactsRouter);  
+app.use(notFoundHandler);  
+app.use(errorHandler);  
 
-  app.use((req, res) => {  
-    res.status(404).json({ message: 'Not found' });  
-  });  
-
-  const PORT = process.env.PORT || 3000;  
-  app.listen(PORT, () => {  
-    console.log(`Server is running on port ${PORT}`);  
-  });  
+const setupServer = (port) => {  
+    app.listen(port, () => {  
+        console.log(`Сервер запущено на порті ${port}`);  
+    });  
+    return app;  
 };  
 
-export default setupServer;
+export default setupServer;  
